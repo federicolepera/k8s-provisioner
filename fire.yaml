@@ -3,3 +3,4 @@
   hosts: localhost
   roles:
     - vm_provisioner
+    - init_k3s
