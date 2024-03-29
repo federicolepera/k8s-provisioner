@@ -1,5 +1,5 @@
 ---
 - name: provisioning ad configure k8s on vware
-  hosts: all
+  hosts: localhost
   roles:
     - vm_provisioner
