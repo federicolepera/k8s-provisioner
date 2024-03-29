@@ -1,2 +1,64 @@
 ---
 # tasks file for k3s_init
+- name: wait vms bootstrap
+  wait_for_connection:
+    timeout: 300
+    
+- name: ensure server dns is set 
+  lineinfile:
+    path: /etc/netplan/99-netcfg-vmware.yaml
+    insertafter: "gateway4"
+    line: "      nameservers:"
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: debug
+  debug:
+    var: hostvars[inventory_hostname]['network']['nameserver']
+  when: inventory_hostname != 'localhost'
+
+- name: ensure server dns is set 
+  lineinfile:
+    path: /etc/netplan/99-netcfg-vmware.yaml
+    insertafter: "      nameservers:"
+    line: "        addresses:"
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: ensure server dns is set 
+  lineinfile:
+    path: /etc/netplan/99-netcfg-vmware.yaml
+    insertafter: "        addresses:"
+    line: "          - {{ hostvars[inventory_hostname]['network']['nameserver'] }}"
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: ensure server dns is set 
+  shell: netplan apply
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: ensure curl is present
+  apt:
+    name: curl
+    state: present
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: Download and install k3s on master node
+  shell:
+    cmd: curl -sfL https://get.k3s.io | sh -
+  become: true
+  when: "'masters' in group_names"
+
+- name: get master token
+  shell: 
+    cmd: cat /var/lib/rancher/k3s/server/node-token
+  register: k3s_token
+  become: true
+  when: "'masters' in group_names"
+    
+- name: install k3s on worker with token
+  shell: 
+    cmd: "curl -sfL https://get.k3s.io | K3S_URL=https://{{ hostvars[groups['masters'][0]]['network']['ip'] }}:6443 K3S_TOKEN={{ hostvars[groups['masters'][0]]['k3s_token']['stdout'] }} sh -"
+  when: "'workers' in group_names"
