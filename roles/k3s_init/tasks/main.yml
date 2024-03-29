@@ -51,6 +51,13 @@
   become: true
   when: "'masters' in group_names"
 
+- name: Ensure api server in up on 6443
+  wait_for: 
+    host: "{{ hostvars[inventory_hostname]['network']['ip'] }}"
+    port: 6443
+    delay: 10
+  when: "'masters' in group_names"
+
 - name: get master token
   shell: 
     cmd: cat /var/lib/rancher/k3s/server/node-token
@@ -62,3 +69,10 @@
   shell: 
     cmd: "curl -sfL https://get.k3s.io | K3S_URL=https://{{ hostvars[groups['masters'][0]]['network']['ip'] }}:6443 K3S_TOKEN={{ hostvars[groups['masters'][0]]['k3s_token']['stdout'] }} sh -"
   when: "'workers' in group_names"
+
+- name: get cluster status
+  shell:
+    cmd: export KUBECONFIG=/etc/rancher/k3s/k3s.yaml && kubectl get nodes
+  register: k3s_nodes
+  become: true
+  when: "'masters' in group_names"
