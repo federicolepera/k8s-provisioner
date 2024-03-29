@@ -1,6 +1,28 @@
 ---
 # tasks file for vm_provisioner
+- name: ensure terraform dir is present
+  file:
+    path: "{{ playbook_dir }}/terraform"
+    state: directory
+
+- name: ensure terraform/vm_provisioner dir is present
+  file:
+    path: "{{ playbook_dir }}/terraform/vm_provisioner"
+    state: directory
+
 - name: create terraform .tf from template
   template:
     src: vm_provisioner.tf.j2
-    dest: "{{ playbook_dir }}/terraform/vm_provisioner.tf"
+    dest: "{{ playbook_dir }}/terraform/vm_provisioner/vm_provisioner.tf"
+
+- name: Terraform init and apply
+  block:
+    - name: init terraform
+      shell:
+        cmd: terraform init
+        chdir: "{{ playbook_dir }}/terraform/vm_provisioner"
+
+    - name: apply terraform  
+      shell:
+        cmd: terraform apply --auto-approve
+        chdir: "{{ playbook_dir }}/terraform/vm_provisioner"
