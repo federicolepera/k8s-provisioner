@@ -35,6 +35,8 @@ resource "vsphere_virtual_machine" {{ host }} {
 
   datastore_id		= data.vsphere_datastore.datastore.id
   resource_pool_id	= data.vsphere_compute_cluster.compute_cluster.resource_pool_id
+  guest_id = "ubuntu64Guest"
+  folder = "{{ vsphere_folder }}"
 
   network_interface {
     network_id 		= data.vsphere_network.network.id
@@ -55,6 +57,11 @@ resource "vsphere_virtual_machine" {{ host }} {
   clone {
     template_uuid       = data.vsphere_virtual_machine.template.id
     customize {
+
+      linux_options {
+        host_name       = "{{ host }}"
+        domain		= "{{ vms_domain }}"
+    }
       
     network_interface {
       ipv4_address	= "{{ hostvars[host]['network']['ip'] }}"
