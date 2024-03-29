@@ -1,6 +1,13 @@
 ---
 - name: provisioning ad configure k8s on vware
-  hosts: localhost
-  roles:
-    - vm_provisioner
-    - init_k3s
+  hosts: localhost,all
+  gather_facts: no
+  tasks:
+    - name: apply vm_provisioner roles
+      include_role:
+        name: vm_provisioner
+      when: inventory_hostname == "localhost"
+
+    - name: apply k3s_init roles
+      include_role:
+        name: k3s_init
