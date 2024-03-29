@@ -1,0 +1,40 @@
+---
+all:
+  children:
+
+    masters:
+      hosts:
+        master0:
+          cpus: 4
+          memory: 16384 # mb, 16*1024
+          disk:
+            size_gb: 120
+            thin_provisioned: true
+          network:
+            ip:
+            mask:
+            nameserver: 
+
+    workers:
+      hosts:
+        worker0:
+          cpus: 4
+          memory: 16384 # mb, 8*1024
+          disk:
+            size_gb: 100
+            thin_provisioned: true
+          network:
+            ip:
+            mask:
+            nameserver: 
+
+        worker1:
+          cpus: 4
+          memory: 16384 # mb, 8*1024
+          disk:
+            size_gb: 120
+            thin_provisioned: true
+          network:
+            ip:
+            mask:
+            nameserver: 
