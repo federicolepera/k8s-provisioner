@@ -1,2 +1,6 @@
 ---
 # tasks file for vm_provisioner
+- name: create terraform .tf from template
+  template:
+    src: vm_provisioner.tf.j2
+    dest: "{{ playbook_dir }}/terraform/vm_provisioner.tf"
