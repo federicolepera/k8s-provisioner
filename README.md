@@ -74,6 +74,11 @@ export KUBECONFIG=/path/to/k3s.yaml
 ----
 ## HELM
 
+### Requirements
+L'utente deve fornire risoluzione DNS per gli ingress creati
+
+### Installazione
+
 Nella cartella helm esistono tutti i template per il deployment dell'applicativo sopra menzionato.
 Esiste un file values.yaml riempito con delle variabili d'esmepio.
 
