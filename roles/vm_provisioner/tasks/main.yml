@@ -26,7 +26,3 @@
       shell:
         cmd: terraform apply --auto-approve
         chdir: "{{ playbook_dir }}/terraform/vm_provisioner"
-    
-    - name: debug
-      debug:
-        var: groups['all']

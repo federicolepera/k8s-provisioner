@@ -1,0 +1,102 @@
+---
+# tasks file for k8s_security
+- name: wait vms bootstrap
+  wait_for_connection:
+    timeout: 300
+
+- name: ensure server dns is set 
+  lineinfile:
+    path: /etc/netplan/99-netcfg-vmware.yaml
+    insertafter: "gateway4"
+    line: "      nameservers:"
+  become: true
+
+- name: ensure server dns is set 
+  lineinfile:
+    path: /etc/netplan/99-netcfg-vmware.yaml
+    insertafter: "      nameservers:"
+    line: "        addresses:"
+  become: true
+
+- name: ensure server dns is set 
+  lineinfile:
+    path: /etc/netplan/99-netcfg-vmware.yaml
+    insertafter: "        addresses:"
+    line: "          - {{ hostvars[inventory_hostname]['network']['nameserver'] }}"
+  become: true
+
+- name: ensure server dns is set 
+  shell: netplan apply
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: enable ufw
+  command: ufw --force enable
+  become: true
+
+- name: allow traffic on port 22
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+  become: true
+
+- name: allow traffic on port 6443 for apiserver
+  ufw:
+    rule: allow
+    port: 6443
+    proto: tcp
+  become: true
+  when: "'masters' in group_names"
+
+- name: allow traffic from pods cidr
+  ufw:
+    rule: allow
+    from_ip: "10.42.0.0/16"
+  become: true
+
+- name: allow traffic from services cidr
+  ufw:
+    rule: allow
+    from_ip: "10.43.0.0/16"
+  become: true
+
+- name: allow traffic on port 10250 on nodes
+  ufw:
+    rule: allow
+    port: 10250
+    proto: tcp
+  become: true
+
+- name: allow traffic on port 8472 on nodes
+  ufw:
+    rule: allow
+    port: 8472
+    proto: udp
+  become: true
+
+- name: Ensure protect-kernel-defaults is set
+  copy:
+    dest: /etc/sysctl.d/90-kubelet.conf
+    content: |
+      vm.panic_on_oom=0
+      vm.overcommit_memory=1
+      kernel.panic=10
+      kernel.panic_on_oops=1
+  become: true
+  notify:
+    - ensure sysctl is applied
+
+- name: Ensure /var/lib/rancher/k3s/server dir exists
+  file:
+    path: /var/lib/rancher/k3s/server
+    state: directory
+  become: true
+  when: "'masters' in group_names"
+  
+- name: Ensure policy psa.yaml is exists
+  copy:
+    dest: /var/lib/rancher/k3s/server/psa.yaml
+    src: psa.yaml
+  become: true
+  when: "'masters' in group_names"

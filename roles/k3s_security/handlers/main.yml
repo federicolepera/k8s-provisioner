@@ -1,0 +1,6 @@
+---
+# handlers file for k8s_security
+- name: ensure sysctl is applied
+  shell:
+    cmd: sysctl -p /etc/sysctl.d/90-kubelet.conf
+  become: true
