@@ -1,43 +1,5 @@
 ---
 # tasks file for k3s_init
-- name: wait vms bootstrap
-  wait_for_connection:
-    timeout: 300
-    
-- name: ensure server dns is set 
-  lineinfile:
-    path: /etc/netplan/99-netcfg-vmware.yaml
-    insertafter: "gateway4"
-    line: "      nameservers:"
-  become: true
-  when: inventory_hostname != 'localhost'
-
-- name: debug
-  debug:
-    var: hostvars[inventory_hostname]['network']['nameserver']
-  when: inventory_hostname != 'localhost'
-
-- name: ensure server dns is set 
-  lineinfile:
-    path: /etc/netplan/99-netcfg-vmware.yaml
-    insertafter: "      nameservers:"
-    line: "        addresses:"
-  become: true
-  when: inventory_hostname != 'localhost'
-
-- name: ensure server dns is set 
-  lineinfile:
-    path: /etc/netplan/99-netcfg-vmware.yaml
-    insertafter: "        addresses:"
-    line: "          - {{ hostvars[inventory_hostname]['network']['nameserver'] }}"
-  become: true
-  when: inventory_hostname != 'localhost'
-
-- name: ensure server dns is set 
-  shell: netplan apply
-  become: true
-  when: inventory_hostname != 'localhost'
-
 - name: ensure curl is present
   apt:
     name: curl
@@ -47,7 +9,7 @@
 
 - name: Download and install k3s on master node
   shell:
-    cmd: curl -sfL https://get.k3s.io | sh -
+    cmd: curl -sfL https://get.k3s.io | sh -s - --kube-apiserver-arg="admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml"
   become: true
   when: "'masters' in group_names"
 
@@ -70,9 +32,53 @@
     cmd: "curl -sfL https://get.k3s.io | K3S_URL=https://{{ hostvars[groups['masters'][0]]['network']['ip'] }}:6443 K3S_TOKEN={{ hostvars[groups['masters'][0]]['k3s_token']['stdout'] }} sh -"
   when: "'workers' in group_names"
 
-- name: get cluster status
-  shell:
-    cmd: export KUBECONFIG=/etc/rancher/k3s/k3s.yaml && kubectl get nodes
-  register: k3s_nodes
+- name: Download kubeconfig
+  fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ playbook_dir }}/k3s.yaml"
+    flat: true
   become: true
   when: "'masters' in group_names"
+
+- name: Update kubeconfig file
+  lineinfile:
+    path: "{{ playbook_dir }}/k3s.yaml"
+    regexp: "    server"
+    line: "    server: https://{{ hostvars[groups['masters'][0]]['network']['ip'] }}:6443"
+  when: inventory_hostname == 'localhost'
+
+- name: create resources in k8s
+  block:
+    - name: create terraform file for namespace
+      template:
+        src: create_namespace.tf.j2
+        dest: "{{ playbook_dir }}/terraform/k8s/create_namespace.tf"
+
+    - name: init terraform
+      shell:
+        cmd: terraform init
+        chdir: "{{ playbook_dir }}/terraform/k8s"
+
+    - name: apply terraform  for namespace creation
+      shell:
+        cmd: "terraform apply --auto-approve"
+        chdir: "{{ playbook_dir }}/terraform/k8s"
+    
+    - name: install tekton operator
+      shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml"
+    
+    - name: install tekton dashboard
+      shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml"
+    
+    - name: template ingress for tekton dashboard
+      template: 
+        src: create_ingress.yaml.j2
+        dest: /tmp/create_ingress.yaml
+
+    - name: apply ingress
+      shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename /tmp/create_ingress.yaml"
+  when: inventory_hostname == 'localhost'
+
