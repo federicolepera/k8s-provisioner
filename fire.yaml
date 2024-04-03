@@ -8,6 +8,11 @@
         name: vm_provisioner
       when: inventory_hostname == "localhost"
 
+    - name: apply k3s_security roles
+      include_role:
+        name: k3s_security
+      when: inventory_hostname != "localhost"
+
     - name: apply k3s_init roles
       include_role:
         name: k3s_init
