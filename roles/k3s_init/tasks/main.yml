@@ -80,5 +80,10 @@
     - name: apply ingress
       shell:
         cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename /tmp/create_ingress.yaml"
+    
+    - name: apply kube-bench Job
+      shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename {{ playbook_dir }}/yaml_manifest/job.yaml"
+      ignore_errors: true
   when: inventory_hostname == 'localhost'
 
