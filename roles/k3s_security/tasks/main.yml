@@ -4,25 +4,10 @@
   wait_for_connection:
     timeout: 300
 
-- name: ensure server dns is set 
-  lineinfile:
-    path: /etc/netplan/99-netcfg-vmware.yaml
-    insertafter: "gateway4"
-    line: "      nameservers:"
-  become: true
-
-- name: ensure server dns is set 
-  lineinfile:
-    path: /etc/netplan/99-netcfg-vmware.yaml
-    insertafter: "      nameservers:"
-    line: "        addresses:"
-  become: true
-
-- name: ensure server dns is set 
-  lineinfile:
-    path: /etc/netplan/99-netcfg-vmware.yaml
-    insertafter: "        addresses:"
-    line: "          - {{ hostvars[inventory_hostname]['network']['nameserver'] }}"
+- name: create netplan from template
+  template:
+    src: netplan.j2
+    dest: /etc/netplan/99-netcfg-vmware.yaml
   become: true
 
 - name: ensure server dns is set 

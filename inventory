@@ -15,6 +15,7 @@ all:
             ip: 172.29.16.95
             mask: 24
             nameserver:  172.29.16.20
+            gateway: 172.29.16.254
 
     workers:
       hosts:
@@ -29,6 +30,7 @@ all:
             ip: 172.29.16.96
             mask: 24
             nameserver:  172.29.16.20
+            gateway: 172.29.16.254
 
         worker1:
           ansible_host: 172.29.16.97
@@ -41,3 +43,4 @@ all:
             ip: 172.29.16.97
             mask: 24
             nameserver: 172.29.16.20
+            gateway: 172.29.16.254

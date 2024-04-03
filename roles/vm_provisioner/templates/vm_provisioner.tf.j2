@@ -68,7 +68,7 @@ resource "vsphere_virtual_machine" {{ host }} {
       ipv4_netmask	= "{{ hostvars[host]['network']['mask'] }}"
       dns_server_list	= ["{{ hostvars[host]['network']['nameserver'] }}"]
     }
-    ipv4_gateway = "172.29.16.254"
+    ipv4_gateway = "{{ hostvars[host]['network']['gateway'] }}"
    }
   }
  }

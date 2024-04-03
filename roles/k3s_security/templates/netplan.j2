@@ -1,0 +1,14 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    ens192:
+      dhcp4: no
+      dhcp6: no
+      addresses:
+        - {{ hostvars[inventory_hostname]['network']['ip'] }}/{{ hostvars[inventory_hostname]['network']['mask'] }}
+      gateway4: {{ hostvars[inventory_hostname]['network']['gateway'] }}
+      nameservers:
+        addresses:
+          - {{ hostvars[inventory_hostname]['network']['nameserver'] }}
+          
