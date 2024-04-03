@@ -2,6 +2,10 @@
 ----
 
 Questo progetto contiene una serie di ruoli ansible, che uniti ad un playbook di avvio e ad un inventory, settato adeguatamente, crea e configura un cluster k3s su vmware.
+Il progetto contiene una parte helm che esegue il deployment di un'applicativo molto semplice composto da:
+  - database mysql
+  - api node
+  - htlm + javascirpt frontend (nginx)
 
 ## Automazioni realizzate dal playbook
 
@@ -12,6 +16,7 @@ Questo progetto contiene una serie di ruoli ansible, che uniti ad un playbook di
 * Installazione k3s sulle macchine, sia master che worker
 * Download kubeconfig creato sulla directory del playbook
 * Creazione namespace sul cluster con terraform
+* Creazione job kube-bench sul namespace default (assesment di security)
 * Installazione tekton operator
 * Installazione tekton dashboard e sua esposizione tramite ingress
 
@@ -65,3 +70,63 @@ Alla fine di esecuzione del playbook per eseguire kubectl eseguire questa export
 ```console
 export KUBECONFIG=/path/to/k3s.yaml
 ```
+
+----
+## HELM
+
+### Requirements
+* L'utente deve fornire risoluzione DNS per gli ingress creati
+* helm
+
+### Installazione applicativo personale
+
+Nella cartella helm esistono tutti i template per il deployment dell'applicativo sopra menzionato.
+Esiste un file values.yaml riempito con delle variabili d'esmepio.
+
+Per installare lìapplicativo eseguire:
+```console
+kubectl create namespace NAMESPACE_NAME
+```
+
+```console
+cd helm/nginx-node-mysql && helm install RELEASE_NAME . -n NAMESPACE_NAME
+```
+
+Eseguendo 
+```console
+kubectl get pod -n NAMESPACE_NAME
+```
+Si ha uno stato dei pod deployati.
+
+Dopo il deployment eseguire sul container mysql, una volta entranti con la cli mysql, questo comando per permettere l'autenticazione da parte del pod node:
+Sostituire USERNAME e PASSWORD con quelle settate vie helm
+
+```console
+ALTER USER 'USERNAME' IDENTIFIED WITH mysql_native_password BY 'PASSWORD';
+flush privileges;
+```
+
+### Installazione AWX Operator
+doc: https://ansible.readthedocs.io/projects/awx-operator/en/latest/
+github: https://github.com/ansible/awx-operator
+
+Eseguire:
+
+```console
+helm repo add awx-operator https://ansible.github.io/awx-operator/
+helm repo update
+helm install -n awx --create-namespace my-awx-operator awx-operator/awx-operator
+```
+Verrà installato l'awx operator che rende disponibile una nuova CRD che installa a sua volta AWX.
+
+Per installare AWX con la CRD è fornito un semplicissimo helm 
+
+```console
+cd helm/awx && helm install RELEASE_NAME . -n NAMESPACE_NAME
+```
+Nella cartella c'è un file values.yaml con le variabili d'esempio con cui creare lo stack awx.
+
+
+
+
+
