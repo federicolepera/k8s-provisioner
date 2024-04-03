@@ -78,7 +78,7 @@ export KUBECONFIG=/path/to/k3s.yaml
 * L'utente deve fornire risoluzione DNS per gli ingress creati
 * helm
 
-### Installazione
+### Installazione applicativo personale
 
 Nella cartella helm esistono tutti i template per il deployment dell'applicativo sopra menzionato.
 Esiste un file values.yaml riempito con delle variabili d'esmepio.
@@ -89,7 +89,7 @@ kubectl create namespace NAMESPACE_NAME
 ```
 
 ```console
-cd helm && helm install RELEASE_NAME . -n NAMESPACE_NAME
+cd helm/nginx-node-mysql && helm install RELEASE_NAME . -n NAMESPACE_NAME
 ```
 
 Eseguendo 
@@ -105,6 +105,26 @@ Sostituire USERNAME e PASSWORD con quelle settate vie helm
 ALTER USER 'USERNAME' IDENTIFIED WITH mysql_native_password BY 'PASSWORD';
 flush privileges;
 ```
+
+### Installazione AWX Operator
+doc: https://ansible.readthedocs.io/projects/awx-operator/en/latest/
+github: https://github.com/ansible/awx-operator
+
+Eseguire:
+
+```console
+helm repo add awx-operator https://ansible.github.io/awx-operator/
+helm repo update
+helm install -n awx --create-namespace my-awx-operator awx-operator/awx-operator
+```
+Verrà installato l'awx operator che rende disponibile una nuova CRD che installa a sua volta AWX.
+
+Per installare AWX con la CRD è fornito un semplicissimo helm 
+
+```console
+cd helm/awx && helm install RELEASE_NAME . -n NAMESPACE_NAME
+```
+Nella cartella c'è un file values.yaml con le variabili d'esempio con cui creare lo stack awx.
 
 
 
