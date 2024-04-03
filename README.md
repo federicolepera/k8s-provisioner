@@ -75,7 +75,8 @@ export KUBECONFIG=/path/to/k3s.yaml
 ## HELM
 
 ### Requirements
-L'utente deve fornire risoluzione DNS per gli ingress creati
+* L'utente deve fornire risoluzione DNS per gli ingress creati
+* helm
 
 ### Installazione
 
