@@ -2,6 +2,10 @@
 ----
 
 Questo progetto contiene una serie di ruoli ansible, che uniti ad un playbook di avvio e ad un inventory, settato adeguatamente, crea e configura un cluster k3s su vmware.
+Il progetto contiene una parte helm che esegue il deployment di un'applicativo molto semplice composto da:
+  - database mysql
+  - api node
+  - htlm + javascirpt frontend (nginx)
 
 ## Automazioni realizzate dal playbook
 
@@ -12,6 +16,7 @@ Questo progetto contiene una serie di ruoli ansible, che uniti ad un playbook di
 * Installazione k3s sulle macchine, sia master che worker
 * Download kubeconfig creato sulla directory del playbook
 * Creazione namespace sul cluster con terraform
+* Creazione job kube-bench sul namespace default (assesment di security)
 * Installazione tekton operator
 * Installazione tekton dashboard e sua esposizione tramite ingress
 
@@ -65,3 +70,29 @@ Alla fine di esecuzione del playbook per eseguire kubectl eseguire questa export
 ```console
 export KUBECONFIG=/path/to/k3s.yaml
 ```
+
+----
+## HELM
+
+Nella cartella helm esistono tutti i template per il deployment dell'applicativo sopra menzionato.
+Esiste un file values.yaml riempito con delle variabili d'esmepio.
+
+Per installare lìapplicativo eseguire:
+```console
+kubectl create namespace NAMESPACE_NAME
+```
+
+```console
+cd helm && helm install RELEASE_NAME . -n NAMESPACE_NAME
+```
+
+Eseguendo 
+```console
+kubectl get pod -n NAMESPACE_NAME
+```
+Si ha uno stato dei pod deployati.
+
+
+
+
+
