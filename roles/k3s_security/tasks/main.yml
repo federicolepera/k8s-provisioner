@@ -86,17 +86,3 @@
   become: true
   notify:
     - ensure sysctl is applied
-
-- name: Ensure /var/lib/rancher/k3s/server dir exists
-  file:
-    path: /var/lib/rancher/k3s/server
-    state: directory
-  become: true
-  when: "'masters' in group_names"
-  
-- name: Ensure policy psa.yaml is exists
-  copy:
-    dest: /var/lib/rancher/k3s/server/psa.yaml
-    src: psa.yaml
-  become: true
-  when: "'masters' in group_names"

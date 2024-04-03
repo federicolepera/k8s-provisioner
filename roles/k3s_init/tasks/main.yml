@@ -9,7 +9,7 @@
 
 - name: Download and install k3s on master node
   shell:
-    cmd: curl -sfL https://get.k3s.io | sh -s - --kube-apiserver-arg="admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml"
+    cmd: curl -sfL https://get.k3s.io | sh -
   become: true
   when: "'masters' in group_names"
 
