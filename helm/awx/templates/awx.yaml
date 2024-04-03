@@ -1,0 +1,6 @@
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: {{ .Values.awx.name }}
+spec:
+  service_type: {{ .Values.awx.service_type }}

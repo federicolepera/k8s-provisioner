@@ -1,20 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: node
+  name: nginx
 spec:
   selector:
     matchLabels:
-      app: node
+      app: nginx
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: node
+        app: nginx
     spec:
       containers:
-      - image: quay.io/federico_lepera/rdimages:node
+      - image: quay.io/federico_lepera/rdimages:nginx
         name: node
+        imagePullPolicy: Always
         ports:
         - containerPort: 3000
