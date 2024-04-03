@@ -1,3 +1,4 @@
 vars.yaml
 terraform
 k3s.yaml
+.vscode
