@@ -92,6 +92,14 @@ kubectl get pod -n NAMESPACE_NAME
 ```
 Si ha uno stato dei pod deployati.
 
+Dopo il deployment eseguire sul container mysql, una volta entranti con la cli mysql, questo comando per permettere l'autenticazione da parte del pod node:
+Sostituire USERNAME e PASSWORD con quelle settate vie helm
+
+```console
+ALTER USER 'USERNAME' IDENTIFIED WITH mysql_native_password BY 'PASSWORD';
+flush privileges;
+```
+
 
 
 
