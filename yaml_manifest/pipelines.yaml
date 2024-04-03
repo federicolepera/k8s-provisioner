@@ -10,8 +10,6 @@ spec:
       optional: false
     - name: credenziali-git
       optional: false
-    - name: maven-settings
-      optional: false
     - name: credenziali-quay
       optional: false
   tasks:
