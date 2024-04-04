@@ -78,7 +78,7 @@ export KUBECONFIG=/path/to/k3s.yaml
 * L'utente deve fornire risoluzione DNS per gli ingress creati
 * helm
 
-### Installazione applicativo personale
+### Installazione applicativo custom
 
 Nella cartella helm esistono tutti i template per il deployment dell'applicativo sopra menzionato.
 Esiste un file values.yaml riempito con delle variabili d'esmepio.
@@ -128,7 +128,15 @@ Nella cartella c'è un file values.yaml con le variabili d'esempio con cui crear
 
 ## Pipeline CICD
 
-Utilizzo di tekton, manifest incompleti nella cartella yaml_manifest
+All'interno della cartella yaml_manifests si pososno trovare delle pipeline di esempio per l'applicativo custom.
+Le pipeline partendo da una git clone eseguono la build dei due container e poi il push verso un registry.
+
+Per rendere le pipeline funzionanti, oltre a tekton installato (dal playbook) sono necessari tre componenti:
+* secret per le auth del registry
+* secret con chiave ssh e known_host del vostor repository
+* 1 persistentVolumeClaim da 1 GB
+
+Nella cartella yaml_manifest sono forniti due secret di esempio, vuoti, da poter utilizzare con le proprie credenziali.
 
 ----
 ## KUBE-BENCH
