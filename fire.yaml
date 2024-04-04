@@ -4,15 +4,15 @@
   gather_facts: no
   tasks:
     - name: apply vm_provisioner roles
-      include_role:
+      ansible.builtin.include_role:
         name: vm_provisioner
       when: inventory_hostname == "localhost"
 
     - name: apply k3s_security roles
-      include_role:
+      ansible.builtin.include_role:
         name: k3s_security
       when: inventory_hostname != "localhost"
 
     - name: apply k3s_init roles
-      include_role:
+      ansible.builtin.include_role:
         name: k3s_init
