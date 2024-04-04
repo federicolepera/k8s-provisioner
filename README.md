@@ -126,7 +126,30 @@ cd helm/awx && helm install RELEASE_NAME . -n NAMESPACE_NAME
 ```
 Nella cartella c'è un file values.yaml con le variabili d'esempio con cui creare lo stack awx.
 
+## Pipeline CICD
 
+Utilizzo di tekton, manifest incompleti nella cartella yaml_manifest
+
+----
+## KUBE-BENCH
+
+Kube-Bench è uno strumento open-source progettato per valutare la sicurezza di un cluster Kubernetes. Esso esegue controlli su vari aspetti di sicurezza secondo le linee guida di sicurezza Kubernetes, aiutando gli amministratori di sistema a identificare vulnerabilità e configurazioni non sicure nel loro ambiente Kubernetes.
+
+Perché usare Kube-Bench?
+1. Identificazione di vulnerabilità
+Kube-Bench esegue controlli su numerosi aspetti critici della configurazione di Kubernetes, rilevando potenziali vulnerabilità di sicurezza e configurazioni non sicure.
+
+2. Conformità alle best practice
+Molti standard di sicurezza, come CIS Kubernetes Benchmark, offrono linee guida per configurare Kubernetes in modo sicuro. Kube-Bench consente di valutare rapidamente la conformità del cluster rispetto a tali best practice.
+
+3. Automatizzazione
+Kube-Bench automatizza il processo di valutazione della sicurezza del cluster, risparmiando tempo e sforzi agli amministratori di sistema. È possibile integrare Kube-Bench in pipeline di CI/CD o schedulare controlli periodici per garantire una sicurezza continua.
+
+4. Reporting dettagliato
+Kube-Bench fornisce report dettagliati che evidenziano le aree di miglioramento e le potenziali minacce. Questi report sono utili per pianificare e prioritizzare le azioni correttive.
+
+5. Supporto per ambienti multi-cloud
+Kube-Bench è progettato per essere utilizzato su diversi provider cloud e configurazioni di Kubernetes, consentendo agli utenti di valutare la sicurezza del cluster indipendentemente dall'ambiente di hosting.
 
 
 
