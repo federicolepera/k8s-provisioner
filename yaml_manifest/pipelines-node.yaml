@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: new-pipeline
+  name: node-pipeline
 spec:
   params: []
   resources: []
@@ -19,7 +19,7 @@ spec:
         name: git-clone
       params:
         - name: url
-          value: 'git@github.com:federicolepera/k8s-provisioner.git'
+          value: 'git@gitlab.com:federico_le_pera/node-kir.git'
         - name: revision
           value: ''
         - name: refspec
@@ -60,13 +60,13 @@ spec:
       runAfter:
         - git-clone
       taskRef:
-        kind: Task
+        kind: ClusterTask
         name: kaniko
       params:
         - name: IMAGE
-          value: quay.io/flepera/node
+          value: quay.io/federico_lepera/rdimages:node
         - name: DOCKERFILE
-          value: ./Dockerfile
+          value: ./docker/node/Dockerfile
         - name: CONTEXT
           value: ./
         - name: EXTRA_ARGS

@@ -1,0 +1,82 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: nginx-pipeline
+spec:
+  params: []
+  resources: []
+  workspaces:
+    - name: shared-storage
+      optional: false
+    - name: credenziali-git
+      optional: false
+    - name: credenziali-quay
+      optional: false
+  tasks:
+    - name: git-clone
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      params:
+        - name: url
+          value: 'git@gitlab.com:federico_le_pera/node-kir.git'
+        - name: revision
+          value: ''
+        - name: refspec
+          value: ''
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: sslVerify
+          value: 'true'
+        - name: crtFileName
+          value: ca-bundle.crt
+        - name: subdirectory
+          value: ''
+        - name: sparseCheckoutDirectories
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+        - name: httpProxy
+          value: ''
+        - name: httpsProxy
+          value: ''
+        - name: noProxy
+          value: ''
+        - name: verbose
+          value: 'true'
+        - name: gitInitImage
+          value: >-
+            gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2
+        - name: userHome
+          value: /home/git
+      workspaces:
+        - name: output
+          workspace: shared-storage
+        - name: ssh-directory
+          workspace: credenziali-git
+    - name: kaniko
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: ClusterTask
+        name: kaniko
+      params:
+        - name: IMAGE
+          value: quay.io/federico_lepera/rdimages:nginx
+        - name: DOCKERFILE
+          value: ./docker/nginx/Dockerfile
+        - name: CONTEXT
+          value: ./
+        - name: EXTRA_ARGS
+          value: []
+        - name: BUILDER_IMAGE
+          value: >-
+            gcr.io/kaniko-project/executor:v1.5.1@sha256:c6166717f7fe0b7da44908c986137ecfeab21f31ec3992f6e128fff8a94be8a5
+      workspaces:
+        - name: source
+          workspace: shared-storage
+        - name: dockerconfig
+          workspace: credenziali-quay
+  finally: []

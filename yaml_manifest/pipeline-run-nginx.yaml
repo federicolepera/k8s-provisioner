@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: pipeline-nginx-run
+  namespace: test
+spec:
+  pipelineRef:
+    name: nginx-pipeline
+  taskRunTemplate:
+    serviceAccountName: default
+  timeouts:
+    pipeline: 1h0m0s
+  workspaces:
+    - name: shared-storage
+      persistentVolumeClaim:
+        claimName: shared-storage
+    - name: credenziali-git
+      secret:
+        secretName: ssh-git
+    - name: credenziali-quay
+      secret:
+        secretName: flepera-quay
