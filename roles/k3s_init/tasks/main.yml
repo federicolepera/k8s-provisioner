@@ -91,4 +91,3 @@
         cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename {{ playbook_dir }}/yaml_manifest/job.yaml"
       ignore_errors: true
   when: inventory_hostname == 'localhost'
-
