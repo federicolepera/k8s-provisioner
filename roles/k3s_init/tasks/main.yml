@@ -1,0 +1,93 @@
+---
+# tasks file for k3s_init
+- name: ensure curl is present
+  ansible.builtin.apt:
+    name: curl
+    state: present
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: Download and install k3s on master node
+  ansible.builtin.shell:
+    cmd: curl -sfL https://get.k3s.io | sh -
+  become: true
+  when: "'masters' in group_names"
+
+- name: Ensure api server in up on 6443
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[inventory_hostname]['network']['ip'] }}"
+    port: 6443
+    delay: 10
+  when: "'masters' in group_names"
+
+- name: get master token
+  ansible.builtin.shell:
+    cmd: cat /var/lib/rancher/k3s/server/node-token
+  register: k3s_token
+  become: true
+  when: "'masters' in group_names"
+
+- name: install k3s on worker with token
+  ansible.builtin.shell:
+    cmd: "curl -sfL https://get.k3s.io | K3S_URL=https://{{ hostvars[groups['masters'][0]]['network']['ip'] }}:6443 K3S_TOKEN={{ hostvars[groups['masters'][0]]['k3s_token']['stdout'] }} sh -"
+  when: "'workers' in group_names"
+
+- name: Download kubeconfig
+  ansible.builtin.fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ playbook_dir }}/k3s.yaml"
+    flat: true
+  become: true
+  when: "'masters' in group_names"
+
+- name: Update kubeconfig file
+  ansible.builtin.lineinfile:
+    path: "{{ playbook_dir }}/k3s.yaml"
+    regexp: "    server"
+    line: "    server: https://{{ hostvars[groups['masters'][0]]['network']['ip'] }}:6443"
+  when: inventory_hostname == 'localhost'
+
+- name: create resources in k8s
+  block:
+    - name: ensure dir exists
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/terraform/k8s"
+        state: directory
+
+    - name: create terraform file for namespace
+      ansible.builtin.template:
+        src: create_namespace.tf.j2
+        dest: "{{ playbook_dir }}/terraform/k8s/create_namespace.tf"
+
+    - name: init terraform
+      ansible.builtin.shell:
+        cmd: terraform init
+        chdir: "{{ playbook_dir }}/terraform/k8s"
+
+    - name: apply terraform  for namespace creation
+      ansible.builtin.shell:
+        cmd: "terraform apply --auto-approve"
+        chdir: "{{ playbook_dir }}/terraform/k8s"
+
+    - name: install tekton operator
+      ansible.builtin.shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml"
+
+    - name: install tekton dashboard
+      ansible.builtin.shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/latest/release-full.yaml"
+
+    - name: template ingress for tekton dashboard
+      ansible.builtin.template:
+        src: create_ingress.yaml.j2
+        dest: /tmp/create_ingress.yaml
+
+    - name: apply ingress
+      ansible.builtin.shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename /tmp/create_ingress.yaml"
+
+    - name: apply kube-bench Job
+      ansible.builtin.shell:
+        cmd: "export KUBECONFIG={{ playbook_dir }}/k3s.yaml && kubectl apply --filename {{ playbook_dir }}/yaml_manifest/job.yaml"
+      ignore_errors: true
+  when: inventory_hostname == 'localhost'

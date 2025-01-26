@@ -1,0 +1,7 @@
+mysql: 
+  password: test
+  username: federico 
+  database: federico
+nginx: 
+  hostname: nginx.lab.local
+

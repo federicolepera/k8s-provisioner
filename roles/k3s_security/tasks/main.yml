@@ -1,0 +1,73 @@
+---
+# tasks file for k8s_security
+- name: wait vms bootstrap
+  ansible.builtin.wait_for_connection:
+    timeout: 300
+
+- name: create netplan from template
+  ansible.builtin.template:
+    src: netplan.j2
+    dest: /etc/netplan/99-netcfg-vmware.yaml
+  become: true
+
+- name: ensure server dns is set
+  ansible.builtin.shell: netplan apply
+  become: true
+  when: inventory_hostname != 'localhost'
+
+- name: enable ufw
+  ansible.builtin.command: ufw --force enable
+  become: true
+
+- name: allow traffic on port 22
+  community.general.ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+  become: true
+
+- name: allow traffic on port 6443 for apiserver
+  community.general.ufw:
+    rule: allow
+    port: 6443
+    proto: tcp
+  become: true
+  when: "'masters' in group_names"
+
+- name: allow traffic from pods cidr
+  community.general.ufw:
+    rule: allow
+    from_ip: "10.42.0.0/16"
+  become: true
+
+- name: allow traffic from services cidr
+  community.general.ufw:
+    rule: allow
+    from_ip: "10.43.0.0/16"
+  become: true
+
+- name: allow traffic on port 10250 on nodes
+  community.general.ufw:
+    rule: allow
+    port: 10250
+    proto: tcp
+  become: true
+
+- name: allow traffic on port 8472 on nodes
+  community.general.ufw:
+    rule: allow
+    port: 8472
+    proto: udp
+  become: true
+
+- name: Ensure protect-kernel-defaults is set
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/90-kubelet.conf
+    content: |
+      vm.panic_on_oom=0
+      vm.overcommit_memory=1
+      kernel.panic=10
+      kernel.panic_on_oops=1
+  become: true
+  notify:
+    - ensure sysctl is applied

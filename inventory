@@ -1,0 +1,46 @@
+---
+all:
+  children:
+
+    masters:
+      hosts:
+        master0:
+          ansible_host: 172.29.16.95
+          cpus: 4
+          memory: 16384 # mb, 16*1024
+          disk:
+            size_gb: 120
+            thin_provisioned: true
+          network:
+            ip: 172.29.16.95
+            mask: 24
+            nameserver:  172.29.16.20
+            gateway: 172.29.16.254
+
+    workers:
+      hosts:
+        worker0:
+          ansible_host: 172.29.16.96
+          cpus: 4
+          memory: 16384 # mb, 8*1024
+          disk:
+            size_gb: 100
+            thin_provisioned: true
+          network:
+            ip: 172.29.16.96
+            mask: 24
+            nameserver:  172.29.16.20
+            gateway: 172.29.16.254
+
+        worker1:
+          ansible_host: 172.29.16.97
+          cpus: 4
+          memory: 16384 # mb, 8*1024
+          disk:
+            size_gb: 120
+            thin_provisioned: true
+          network:
+            ip: 172.29.16.97
+            mask: 24
+            nameserver: 172.29.16.20
+            gateway: 172.29.16.254

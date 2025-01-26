@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node
+spec:
+  selector:
+    matchLabels:
+      app: node
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      containers:
+      - image: quay.io/federico_lepera/rdimages:node
+        name: node
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+          - name: MYSQL_PASSWORD
+            value: {{ .Values.mysql.password }}
+          - name: MYSQL_USER
+            value: {{ .Values.mysql.username }}
+          - name: MYSQL_DB
+            value: {{ .Values.mysql.database }}

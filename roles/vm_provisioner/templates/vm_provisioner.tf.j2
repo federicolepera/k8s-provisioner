@@ -1,0 +1,76 @@
+provider "vsphere" {
+  user 			= "{{ vsphere_user }}"
+  password		= "{{ vsphere_password }}"
+  vsphere_server	= "{{ vsphere_server }}"
+  allow_unverified_ssl	= true
+}
+
+data "vsphere_datacenter" "dc" {
+  name = "{{ vsphere_datacenter }}"
+}
+
+data "vsphere_compute_cluster" "compute_cluster" {
+  name			= "{{ vsphere_compute_cluster }}"
+  datacenter_id		= data.vsphere_datacenter.dc.id
+}
+
+data "vsphere_datastore" "datastore" {
+  name			= "{{ vsphere_datastore }}"
+  datacenter_id         = data.vsphere_datacenter.dc.id
+}
+
+data "vsphere_network" "network" {
+  name			= "{{ vsphere_network }}"
+  datacenter_id		= data.vsphere_datacenter.dc.id
+}
+
+data "vsphere_virtual_machine" "template" {
+  name			= "{{ vsphere_virtual_template }}"
+  datacenter_id         = data.vsphere_datacenter.dc.id
+}
+
+{% for host in groups['all'] %}
+
+resource "vsphere_virtual_machine" {{ host }} {
+
+  datastore_id		= data.vsphere_datastore.datastore.id
+  resource_pool_id	= data.vsphere_compute_cluster.compute_cluster.resource_pool_id
+  guest_id = "ubuntu64Guest"
+  folder = "{{ vsphere_folder }}"
+
+  network_interface {
+    network_id 		= data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.template.network_interface_types[0]
+  }
+
+  name 			= "{{ host }}"
+  
+  num_cpus 		= "{{ hostvars[host]['cpus'] }}"
+  memory		= "{{ hostvars[host]['memory'] }}"
+
+  disk {
+    label		= "disk0"
+    size		= "{{ hostvars[host]['disk']['size_gb'] }}"
+    thin_provisioned	= true
+  }
+
+  clone {
+    template_uuid       = data.vsphere_virtual_machine.template.id
+    customize {
+
+      linux_options {
+        host_name       = "{{ host }}"
+        domain		= "{{ vms_domain }}"
+    }
+      
+    network_interface {
+      ipv4_address	= "{{ hostvars[host]['network']['ip'] }}"
+      ipv4_netmask	= "{{ hostvars[host]['network']['mask'] }}"
+      dns_server_list	= ["{{ hostvars[host]['network']['nameserver'] }}"]
+    }
+    ipv4_gateway = "{{ hostvars[host]['network']['gateway'] }}"
+   }
+  }
+ }
+
+{% endfor %}
